@@ -1,6 +1,10 @@
 import java.util.*;
 import java.io.*;
 
+/* TODO:
+ * Check where output needs to go
+ */
+
 public class ChuprinovAssignment1
 {
 
@@ -8,6 +12,7 @@ public class ChuprinovAssignment1
 	final static double CRAZY_PERCENTAGE = 15;
 	final static double SPLIT_VARIATION = 0.05;
 	final static String INPUT_FILE_NAME = "./Stockmarket-1990-2015.txt";
+	//final static String OUTPUT_FILE_NAME = "./";
 
 	public static void main(String[] args)
 	{
@@ -23,6 +28,7 @@ public class ChuprinovAssignment1
 			// Run functions to read and interpret data from the text file
 			ArrayList<ArrayList<String>> crazies = getCrazies(new Scanner(new File(INPUT_FILE_NAME)));
 			ArrayList<ArrayList<String>> splits = getSplits(new Scanner(new File(INPUT_FILE_NAME)));
+			//PrintWriter writer = new PrintWriter(new File(OUTPUT_FILE_NAME));
 
 			// Print out the data
 			for(int i = 0; i < crazies.size(); i++)
@@ -138,6 +144,8 @@ public class ChuprinovAssignment1
 	 * each of the companies all grouped in one ArrayList. The first entry of a company's list is 
 	 * always the company's ticker symbol. The HashMap is used to keep track of company indices. 
 	 * Nested ArrayList is used to make sure that entries of different companies are separated.
+	 *
+	 * NOTE: REQUIRES THE ENTRIES TO BE SORTED BY COMPANY, MOST RECENT TO OLDEST TOP TO BOTTOM
 	 */
 	private static ArrayList<ArrayList<String>> getSplits(Scanner sc)
 	{
