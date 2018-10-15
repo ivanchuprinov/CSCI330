@@ -4,37 +4,54 @@ import java.io.*;
 public class ChuprinovAssignment1
 {
 
+	/* Constants */
 	final static double CRAZY_PERCENTAGE = 15;
 	final static double SPLIT_VARIATION = 0.05;
-	final static String FILE_NAME = "./Stockmarket-1990-2015.txt";
+	final static String INPUT_FILE_NAME = "./Stockmarket-1990-2015.txt";
 
 	public static void main(String[] args)
 	{
-		
+		/* Required to catch IOException */
 		try{
-			ArrayList<ArrayList<String>> crazies = getCrazies(new Scanner(new File(FILE_NAME)));
-			ArrayList<ArrayList<String>> splits = getSplits(new Scanner(new File(FILE_NAME)));
+			// Check the validity of the given file
+			if(!validInput(INPUT_FILE_NAME))
+			{
+				System.out.println("Error: Invalid input.");
+				System.exit(0);
+			}
 
+			// Run functions to read and interpret data from the text file
+			ArrayList<ArrayList<String>> crazies = getCrazies(new Scanner(new File(INPUT_FILE_NAME)));
+			ArrayList<ArrayList<String>> splits = getSplits(new Scanner(new File(INPUT_FILE_NAME)));
+
+			// Print out the data
 			for(int i = 0; i < crazies.size(); i++)
 			{
 				System.out.println("Processing " + crazies.get(i).get(0) + ":");
 				System.out.println("======================================");
+
+				// Print crazy days
 				for(int j = 1; j < crazies.get(i).size(); j++)
 				{
 					System.out.println("Crazy day: " + crazies.get(i).get(j));
 				}
 				System.out.println("Total crazy days = " + (crazies.get(i).size() - 1));
+
+				// Only print out the craziest day if there are more than 1 crazy days
 				if(crazies.get(i).size() - 1 > 1)
 					System.out.println("The craziest day: " + getCraziest(crazies.get(i)));
 				System.out.println();
-				for(int j = 0; j < splits.get(i).size(); j++)
+
+				// Print splits
+				for(int j = 1; j < splits.get(i).size(); j++)
 				{
 					System.out.println(splits.get(i).get(j));
 				}
+				System.out.println("Total number of splits: " + (splits.get(i).size() - 1) + "\n");
 			}
 
 		}
-		catch(FileNotFoundException e)
+		catch(IOException e)
 		{
 			System.out.println(e);
 		}
@@ -46,19 +63,23 @@ public class ChuprinovAssignment1
 	/* Get Crazies
 	 * Searches through the text file database and stores all crazy days and their percentages
 	 * of companies into ArrayLists which are all stored in one big ArrayList. The first entry
-	 * of a company's list is always the company's ticker symbol.
+	 * of a company's list is always the company's ticker symbol. The HashMap is used to keep
+	 * track of company indices. Nested ArrayList is used to make sure that entries of
+	 * different companies are separated.
 	 */
-	public static ArrayList<ArrayList<String>> getCrazies(Scanner sc)
+	private static ArrayList<ArrayList<String>> getCrazies(Scanner sc)
 	{
+		/* Local variables */
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
 		HashMap<String, Integer> indexMap = new HashMap<String, Integer>();
 		int companyIndex = 0;
-		String candidate;
-		String[] candArr;
-		double highPrice;
-		double lowPrice;
-		double percentage;
+		String candidate = null;
+		String[] candArr = null;
+		double highPrice = 0;
+		double lowPrice = 0;
+		double percentage = 0;
 
+		/* Input file traversal loop */
 		while(sc.hasNextLine())
 		{
 			candidate = sc.nextLine();
@@ -86,15 +107,21 @@ public class ChuprinovAssignment1
 		return result;
 	}
 
-	public static String getCraziest(ArrayList<String> crazyList)
+	/* Get craziest
+	 * Returns the craziest day entry.
+	 */
+	private static String getCraziest(ArrayList<String> crazyList)
 	{
+		/* Local variables */
 		int craziestIndex = 0;
 		double craziestPerc = 0;
+		double percentage = 0;
 
+		/* Finding entry with greatest percentage */
 		for(int i = 1; i < crazyList.size(); i++)
 		{
 			String[] candArr = crazyList.get(i).split("\t");
-			double percentage = Double.valueOf(candArr[1]);
+			percentage = Double.valueOf(candArr[1]);
 			if(craziestPerc < percentage)
 			{
 				craziestPerc = percentage;
@@ -105,71 +132,116 @@ public class ChuprinovAssignment1
 		return crazyList.get(craziestIndex);
 	}
 
-	public static ArrayList<ArrayList<String>> getSplits(Scanner sc)
+	/* Get Splits
+	 * Searches through the text file database and stores all days, on which splits have occurred,
+	 * for each company. Creates an ArrayList of Strings with that data represented nicely for
+	 * each of the companies all grouped in one ArrayList. The first entry of a company's list is 
+	 * always the company's ticker symbol. The HashMap is used to keep track of company indices. 
+	 * Nested ArrayList is used to make sure that entries of different companies are separated.
+	 */
+	private static ArrayList<ArrayList<String>> getSplits(Scanner sc)
 	{
-		
-		
+		/* Local variables */
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-		if(sc.hasNextLine()){
-			int companyIndex = 0;
-			double oldClose = 0;
-			double newOpen = 0;
-			double ratio = 0;
-			String newDay = sc.nextLine();
-			String oldDay = null;
-			String[] newArr = null;
-			String[] oldArr = null;
-			String splType = null;
+		HashMap<String, Integer> indexMap = new HashMap<String, Integer>();
+		int companyIndex = 0;
+		double oldClose = 0;
+		double newOpen = 0;
+		double ratio = 0;
+		String laterDay = null;
+		String priorDay = sc.nextLine();
+		String[] laterArr = null;
+		String[] priorArr = null;
+		String splType = null;
 
-			HashMap<String, Integer> indexMap = new HashMap<String, Integer>();
+		/* Input file traversal loop */
+		while(sc.hasNextLine())
+		{
+			laterDay = priorDay;
+			priorDay = sc.nextLine();				
+			priorArr = priorDay.split("\t");
+			laterArr = laterDay.split("\t");
 
-			while(sc.hasNextLine())
-			{				
-
-				newDay = oldDay;
-				oldDay = sc.nextLine();				
-				oldArr = oldDay.split("\t");
-				newArr = newDay.split("\t");
-
-				if(oldArr[0].equals(newArr[0]))
+			if(priorArr[0].equals(laterArr[0]))
+			{
+				oldClose = Double.valueOf(priorArr[5]);
+				newOpen = Double.valueOf(laterArr[2]);
+				ratio = oldClose/newOpen;
+				if(!indexMap.containsKey(priorArr[0]))
 				{
-					oldClose = Double.valueOf(oldArr[5]);
-					newOpen = Double.valueOf(newArr[2]);
-					ratio = oldClose/newOpen;
-					System.out.println(oldClose + " / " + newOpen + " = " + ratio);
-					if(!indexMap.containsKey(oldArr[0]))
-					{
-						indexMap.put(oldArr[0], companyIndex);
-						companyIndex++;
-						result.add(new ArrayList<String>());
-						result.get(indexMap.get(oldArr[0])).add(oldArr[0]);
-					}
-					splType = splitType(ratio);
-					if(splType != null)
-						result.get(indexMap.get(oldArr[0])).add(String.format(
-							"%s split on %s\t%.2f --> %.2f", splType, oldArr[1], oldClose, newOpen));
+					indexMap.put(priorArr[0], companyIndex);
+					companyIndex++;
+					result.add(new ArrayList<String>());
+					result.get(indexMap.get(priorArr[0])).add(priorArr[0]);
 				}
+				// Get split type and build the string (if necessary)
+				splType = splitType(ratio);
+				if(splType != null)
+					result.get(indexMap.get(priorArr[0])).add(String.format(
+						"%s split on %s\t%.2f --> %.2f", splType, priorArr[1], oldClose, newOpen));
 			}
+		}
 
-			sc.close();
+		sc.close();
+
+		return result;
+	}
+
+	/* Split type
+	 * Returns one of three most common types of splits represented by the given ratio.
+	 * Returns null String if the ratio is not a significant split.
+	 * TODO:
+	 * Specify the criteria for the variation
+	 */
+	private static String splitType(double ratio)
+	{
+		String result = null;
+		if(Math.abs(ratio - 1.5) < SPLIT_VARIATION )//|| ratio > 1.5)
+		{
+			if (Math.abs(ratio - 2) < SPLIT_VARIATION )//|| ratio > 2)
+			{
+				if (Math.abs(ratio - 3) < SPLIT_VARIATION )//|| ratio > 3)
+					result = "3:1";
+				result = "2:1";
+			}
+			result = "3:2";
 		}
 		return result;
 	}
 
-	private static String splitType(double ratio)
+
+	/* Valid Input
+	 * Takes file name as an input and checks if the file with that name follows the rules:
+	 * - Has to exist
+	 * - Has to have at least 2 lines
+	 *
+	 * Idea: expand this method to check for the correct format of the file.
+	 */
+	private static boolean validInput(String fileName)
 	{
-		if(Math.abs(ratio - 1.5) < SPLIT_VARIATION || ratio > 1.5)
+		boolean valid = false;
+		/* Required to catch IOException */
+		try
 		{
-			if (Math.abs(ratio - 2) < SPLIT_VARIATION || ratio > 2)
+			Scanner testScan = new Scanner(new File(fileName));
+			
+			if(testScan.hasNextLine())
 			{
-				if (Math.abs(ratio - 3) < SPLIT_VARIATION || ratio > 3)
-					return "3:1";
-				return "2:1";
+				testScan.nextLine();
+				if(testScan.hasNextLine())
+				{
+					if(testScan.nextLine().length() > 0)
+						valid = true;
+				}
 			}
-			return "3:2";
+			testScan.close();
+				
 		}
-		else
-			return null;
+		catch(IOException e)
+		{
+			System.out.println(e);
+		}
+		return valid;
 	}
 
 }
