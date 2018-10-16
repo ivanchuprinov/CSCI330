@@ -1,8 +1,10 @@
 import java.util.*;
 import java.io.*;
 
-/* TODO:
- * Check where output needs to go
+/* CSCI330
+ * Assignment 1
+ * Ivan Chuprinov
+ * Oct 16, 2018
  */
 
 public class ChuprinovAssignment1
@@ -12,24 +14,23 @@ public class ChuprinovAssignment1
 	final static double CRAZY_PERCENTAGE = 15;
 	final static double SPLIT_VARIATION = 0.05;
 	final static String INPUT_FILE_NAME = "./Stockmarket-1990-2015.txt";
-	//final static String OUTPUT_FILE_NAME = "./";
 
 	public static void main(String[] args)
 	{
-		/* Required to catch IOException */
+	// Check the validity of the given file
+	if(!validInput(INPUT_FILE_NAME))
+	{
+		System.out.println("Error: Invalid input.");
+		System.exit(0);
+	}
+	
+	/* Required to catch IOException */
+		// Run functions to read and interpret data from the text file
 		try{
-			// Check the validity of the given file
-			if(!validInput(INPUT_FILE_NAME))
-			{
-				System.out.println("Error: Invalid input.");
-				System.exit(0);
-			}
-
-			// Run functions to read and interpret data from the text file
-			ArrayList<ArrayList<String>> crazies = getCrazies(new Scanner(new File(INPUT_FILE_NAME)));
-			ArrayList<ArrayList<String>> splits = getSplits(new Scanner(new File(INPUT_FILE_NAME)));
-			//PrintWriter writer = new PrintWriter(new File(OUTPUT_FILE_NAME));
-
+			ArrayList<ArrayList<String>> crazies = getCrazies(INPUT_FILE_NAME);
+			ArrayList<ArrayList<String>> splits = getSplits(INPUT_FILE_NAME);
+		
+		
 			// Print out the data
 			for(int i = 0; i < crazies.size(); i++)
 			{
@@ -55,15 +56,13 @@ public class ChuprinovAssignment1
 				}
 				System.out.println("Total number of splits: " + (splits.get(i).size() - 1) + "\n");
 			}
-
 		}
 		catch(IOException e)
 		{
 			System.out.println(e);
+			System.exit(0);
 		}
-		
 
-		
 	}
 
 	/* Get Crazies
@@ -73,7 +72,7 @@ public class ChuprinovAssignment1
 	 * track of company indices. Nested ArrayList is used to make sure that entries of
 	 * different companies are separated.
 	 */
-	private static ArrayList<ArrayList<String>> getCrazies(Scanner sc)
+	private static ArrayList<ArrayList<String>> getCrazies(String fileName) throws IOException
 	{
 		/* Local variables */
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
@@ -84,7 +83,9 @@ public class ChuprinovAssignment1
 		double highPrice = 0;
 		double lowPrice = 0;
 		double percentage = 0;
-
+		
+		Scanner sc = new Scanner(new File(fileName));
+			
 		/* Input file traversal loop */
 		while(sc.hasNextLine())
 		{
@@ -107,9 +108,9 @@ public class ChuprinovAssignment1
 				result.get(indexMap.get(candArr[0])).add(String.format("%s\t%.2f", candArr[1], percentage));
 			}
 		}
-
+		
 		sc.close();
-
+		
 		return result;
 	}
 
@@ -147,21 +148,26 @@ public class ChuprinovAssignment1
 	 *
 	 * NOTE: REQUIRES THE ENTRIES TO BE SORTED BY COMPANY, MOST RECENT TO OLDEST TOP TO BOTTOM
 	 */
-	private static ArrayList<ArrayList<String>> getSplits(Scanner sc)
+	private static ArrayList<ArrayList<String>> getSplits(String fileName) throws IOException
 	{
 		/* Local variables */
-		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-		HashMap<String, Integer> indexMap = new HashMap<String, Integer>();
 		int companyIndex = 0;
 		double oldClose = 0;
 		double newOpen = 0;
 		double ratio = 0;
 		String laterDay = null;
-		String priorDay = sc.nextLine();
+		String priorDay = null;
 		String[] laterArr = null;
 		String[] priorArr = null;
 		String splType = null;
+		
 
+		Scanner sc = new Scanner(new File(fileName));
+		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
+		HashMap<String, Integer> indexMap = new HashMap<String, Integer>();
+
+		priorDay = sc.nextLine();
+		
 		/* Input file traversal loop */
 		while(sc.hasNextLine())
 		{
@@ -191,29 +197,23 @@ public class ChuprinovAssignment1
 		}
 
 		sc.close();
-
+		
 		return result;
 	}
 
 	/* Split type
 	 * Returns one of three most common types of splits represented by the given ratio.
 	 * Returns null String if the ratio is not a significant split.
-	 * TODO:
-	 * Specify the criteria for the variation
 	 */
 	private static String splitType(double ratio)
 	{
 		String result = null;
-		if(Math.abs(ratio - 1.5) < SPLIT_VARIATION )//|| ratio > 1.5)
-		{
-			if (Math.abs(ratio - 2) < SPLIT_VARIATION )//|| ratio > 2)
-			{
-				if (Math.abs(ratio - 3) < SPLIT_VARIATION )//|| ratio > 3)
-					result = "3:1";
-				result = "2:1";
-			}
+		if(Math.abs(ratio - 1.5) < SPLIT_VARIATION)
 			result = "3:2";
-		}
+		else if (Math.abs(ratio - 2) < SPLIT_VARIATION )
+			result = "2:1";
+		else if (Math.abs(ratio - 3) < SPLIT_VARIATION)
+			result = "3:1";
 		return result;
 	}
 
@@ -228,6 +228,7 @@ public class ChuprinovAssignment1
 	private static boolean validInput(String fileName)
 	{
 		boolean valid = false;
+		
 		/* Required to catch IOException */
 		try
 		{
