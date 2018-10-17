@@ -17,16 +17,17 @@ public class ChuprinovAssignment1
 
 	public static void main(String[] args)
 	{
-	// Check the validity of the given file
-	if(!validInput(INPUT_FILE_NAME))
-	{
-		System.out.println("Error: Invalid input.");
-		System.exit(0);
-	}
-	
-	/* Required to catch IOException */
-		// Run functions to read and interpret data from the text file
-		try{
+		// Check the validity of the given file
+		if(!validInput(INPUT_FILE_NAME))
+		{
+			System.out.println("Error: Invalid input.");
+			System.exit(0);
+		}
+		
+		/* Required to catch IOException */
+		try
+		{
+			// Run functions to read and interpret data from the text file
 			ArrayList<ArrayList<String>> crazies = getCrazies(INPUT_FILE_NAME);
 			ArrayList<ArrayList<String>> splits = getSplits(INPUT_FILE_NAME);
 		
@@ -47,6 +48,7 @@ public class ChuprinovAssignment1
 				// Only print out the craziest day if there are more than 1 crazy days
 				if(crazies.get(i).size() - 1 > 1)
 					System.out.println("The craziest day: " + getCraziest(crazies.get(i)));
+				
 				System.out.println();
 
 				// Print splits
@@ -115,7 +117,7 @@ public class ChuprinovAssignment1
 	}
 
 	/* Get craziest
-	 * Returns the craziest day entry.
+	 * Takes list of crazy day entries. Returns the craziest day entry.
 	 */
 	private static String getCraziest(ArrayList<String> crazyList)
 	{
@@ -181,6 +183,7 @@ public class ChuprinovAssignment1
 				oldClose = Double.valueOf(priorArr[5]);
 				newOpen = Double.valueOf(laterArr[2]);
 				ratio = oldClose/newOpen;
+				
 				if(!indexMap.containsKey(priorArr[0]))
 				{
 					indexMap.put(priorArr[0], companyIndex);
@@ -188,6 +191,7 @@ public class ChuprinovAssignment1
 					result.add(new ArrayList<String>());
 					result.get(indexMap.get(priorArr[0])).add(priorArr[0]);
 				}
+				
 				// Get split type and build the string (if necessary)
 				splType = splitType(ratio);
 				if(splType != null)
